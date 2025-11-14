@@ -1,0 +1,3579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduBloom - Adaptive Learning Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4cc9f0;
+            --success: #4ade80;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f8f9fa;
+            --dark: #1a1d24;
+            --gray: #6c757d;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            
+            /* Day/Night mode variables */
+            --bg-primary: #1a2a6c;
+            --bg-secondary: #3a0ca3;
+            --bg-tertiary: #4361ee;
+            --text-primary: #f8f9fa;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --card-bg-color: rgba(255, 255, 255, 0.08);
+            --glass-bg-color: rgba(255, 255, 255, 0.1);
+            --glass-border-color: rgba(255, 255, 255, 0.2);
+            --role-text-color: #ffffff;
+        }
+
+        /* Day Mode */
+        .day-mode {
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #1a1d24;
+            --text-secondary: #6c757d;
+            --card-bg-color: rgba(255, 255, 255, 0.9);
+            --glass-bg-color: rgba(255, 255, 255, 0.8);
+            --glass-border-color: rgba(0, 0, 0, 0.1);
+            --role-text-color: #1a1d24;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary));
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: var(--glass-bg-color);
+            backdrop-filter: blur(15px);
+            padding: 1.2rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass-border-color);
+        }
+        
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo span {
+            color: var(--accent);
+        }
+        
+        .logo-icon {
+            background: var(--accent);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-5deg);
+        }
+        
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .mode-toggle, .bandwidth-toggle {
+            background: var(--glass-bg-color);
+            border: 1px solid var(--glass-border-color);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .mode-toggle:hover, .bandwidth-toggle:hover {
+            background: var(--card-bg-color);
+        }
+        
+        .offline-indicator {
+            background: var(--warning);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            display: none; /* Hidden until login */
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        /* Page Sections */
+        .page {
+            display: none;
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* Role Selection Page */
+        .role-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+            min-height: 80vh;
+        }
+        
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .role-card {
+            background: var(--card-bg-color);
+            backdrop-filter: blur(10px);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.4s;
+            border: 1px solid var(--glass-border-color);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .role-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .role-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+        }
+        
+        .student-role:before {
+            background: linear-gradient(90deg, var(--accent), #3ab0d6);
+        }
+        
+        .teacher-role:before {
+            background: linear-gradient(90deg, var(--success), #2ecc71);
+        }
+        
+        .role-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .student-role .role-icon {
+            color: var(--accent);
+        }
+        
+        .teacher-role .role-icon {
+            color: var(--success);
+        }
+        
+        .role-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--role-text-color);
+        }
+        
+        .role-description {
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            color: var(--role-text-color);
+        }
+        
+        /* Auto Login Page */
+        .auto-login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+            min-height: 80vh;
+        }
+        
+        .auto-login-card {
+            background: var(--card-bg-color);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--glass-border-color);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .auto-login-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        
+        .student-login .auto-login-avatar {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+        }
+        
+        .teacher-login .auto-login-avatar {
+            background: linear-gradient(135deg, var(--success), #2ecc71);
+        }
+        
+        .auto-login-timer {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 1.5rem 0;
+            color: var(--accent);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+            transition: width 0.1s linear;
+        }
+        
+        .auto-login-text {
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Grade Selection Page */
+        .grades-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        
+        .grades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .grade-card {
+            background: var(--card-bg-color);
+            backdrop-filter: blur(10px);
+            padding: 2rem 1rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.4s;
+            border: 1px solid var(--glass-border-color);
+            cursor: pointer;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .grade-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .grade-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        
+        .grade-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .grade-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        /* Level Selection Page */
+        .levels-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        .level-card {
+            background: var(--card-bg-color);
+            backdrop-filter: blur(10px);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.4s;
+            border: 1px solid var(--glass-border-color);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .level-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+        }
+        
+        .foundation:before {
+            background: linear-gradient(90deg, var(--success), #2ecc71);
+        }
+        
+        .intermediate:before {
+            background: linear-gradient(90deg, var(--warning), #f39c12);
+        }
+        
+        .advanced:before {
+            background: linear-gradient(90deg, var(--danger), #e74c3c);
+        }
+        
+        .level-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .level-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .foundation .level-icon {
+            color: var(--success);
+        }
+        
+        .intermediate .level-icon {
+            color: var(--warning);
+        }
+        
+        .advanced .level-icon {
+            color: var(--danger);
+        }
+        
+        .level-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .level-description {
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        /* Learning Dashboard */
+        .dashboard {
+            padding: 2rem 0;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: var(--card-bg-color);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .user-welcome h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-level {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .student-dashboard .user-level {
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        
+        .teacher-dashboard .user-level {
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        .foundation-level {
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        
+        .intermediate-level {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+        
+        .advanced-level {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .language-selector select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border-color);
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .language-selector select option {
+            background: var(--dark);
+            color: white;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            background: var(--card-bg-color);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+            height: fit-content;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.2rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .student-dashboard .sidebar-menu a:hover, 
+        .student-dashboard .sidebar-menu a.active {
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--accent);
+        }
+        
+        .teacher-dashboard .sidebar-menu a:hover, 
+        .teacher-dashboard .sidebar-menu a.active {
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--success);
+        }
+        
+        .sidebar-menu i {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .content-area {
+            background: var(--card-bg-color);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid var(--glass-border-color);
+            min-height: 600px;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border-color);
+        }
+        
+        .content-title {
+            font-size: 1.8rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .content-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            border: 1px solid var(--glass-border-color);
+            cursor: pointer;
+        }
+        
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .content-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .student-dashboard .content-icon {
+            color: var(--accent);
+        }
+        
+        .teacher-dashboard .content-icon {
+            color: var(--success);
+        }
+        
+        .content-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .content-card p {
+            opacity: 0.8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* Video Lessons */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .video-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .video-thumbnail {
+            height: 180px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .video-thumbnail i {
+            font-size: 3rem;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .video-duration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .video-info {
+            padding: 1.2rem;
+        }
+        
+        .video-info h4 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .video-info p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Audio Lessons */
+        .audio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .audio-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .audio-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .audio-info {
+            flex: 1;
+        }
+        
+        .audio-info h4 {
+            margin-bottom: 0.3rem;
+        }
+        
+        .audio-info p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Quizzes & Tests */
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .quiz-time {
+            background: var(--warning);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .quiz-card h4 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .quiz-card p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Learning Games */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--glass-border-color);
+            transition: all 0.3s;
+        }
+        
+        .game-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .game-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        
+        /* Art & Craft */
+        .art-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .art-tools {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .art-tool {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .art-canvas {
+            height: 400px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: 2px dashed var(--glass-border-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .canvas-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #666;
+        }
+        
+        .canvas-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        /* Progress Tracking */
+        .progress-chart {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        /* Doubt Session */
+        .doubt-notification {
+            background: rgba(76, 201, 240, 0.2);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        /* AI Lesson Planning Section */
+        .ai-lesson-planning {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+            margin-bottom: 1.5rem;
+        }
+        
+        .ai-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border-color);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .ai-result {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+            margin-top: 1.5rem;
+        }
+        
+        .ai-result h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        
+        .student-grouping {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .group-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .group-card h4 {
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+        
+        .student-list-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.3rem;
+        }
+        
+        /* Multi-grade Classroom Section */
+        .multi-grade-classroom {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+            margin-bottom: 1.5rem;
+        }
+        
+        .grade-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+        
+        .grade-tab {
+            padding: 0.7rem 1.2rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        
+        .grade-tab.active {
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--accent);
+        }
+        
+        .grade-content {
+            display: none;
+        }
+        
+        .grade-content.active {
+            display: block;
+        }
+        
+        /* Teacher Dashboard Stats */
+        .teacher-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .student-dashboard .stat-value {
+            color: var(--accent);
+        }
+        
+        .teacher-dashboard .stat-value {
+            color: var(--success);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .student-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+            margin-top: 1.5rem;
+        }
+        
+        .student-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.8rem;
+        }
+        
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .student-dashboard .student-avatar {
+            background: var(--accent);
+        }
+        
+        .teacher-dashboard .student-avatar {
+            background: var(--success);
+        }
+        
+        .student-progress {
+            flex: 1;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.3rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .student-dashboard .progress-fill {
+            background: var(--accent);
+        }
+        
+        .teacher-dashboard .progress-fill {
+            background: var(--success);
+        }
+        
+        /* Teacher Doubts Section */
+        .doubts-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .doubt-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .doubt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .doubt-student {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .doubt-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .doubt-subject {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Progress Reports */
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .report-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .report-student {
+            font-weight: bold;
+        }
+        
+        .report-grade {
+            background: var(--accent);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+        
+        .report-subject {
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Chat & Doubt Section */
+        .chat-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 1.5rem;
+            height: 500px;
+        }
+        
+        .chat-messages {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .message.teacher {
+            background: rgba(76, 201, 240, 0.2);
+            border-left: 3px solid var(--accent);
+        }
+        
+        .message.student {
+            background: rgba(76, 201, 240, 0.1);
+            border-left: 3px solid var(--success);
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border-color);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+        
+        .chat-input button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0 1.5rem;
+            cursor: pointer;
+        }
+        
+        .online-users {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .user-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+        
+        .user-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Question Bank */
+        .question-bank {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 1.5rem;
+        }
+        
+        .question-categories {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+        }
+        
+        .category-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+        
+        .category-list li {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .category-list li:hover, .category-list li.active {
+            background: rgba(76, 201, 240, 0.2);
+        }
+        
+        .questions-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        
+        .question-item {
+            padding: 1.5rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+        
+        /* Class Notes */
+        .notes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .note-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border-color);
+            cursor: pointer;
+        }
+        
+        .note-card h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        
+        .note-content {
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            color: white;
+        }
+        
+        .student-dashboard .btn-primary {
+            background: var(--accent);
+        }
+        
+        .teacher-dashboard .btn-primary {
+            background: var(--success);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border-color);
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .offline-btn {
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        
+        .student-dashboard .offline-btn {
+            background: var(--warning);
+        }
+        
+        .teacher-dashboard .offline-btn {
+            background: var(--warning);
+        }
+        
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
+        }
+        
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            color: white;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Rural Icons */
+        .rural-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+        }
+        
+        /* Low Bandwidth Mode */
+        .low-bandwidth .video-thumbnail,
+        .low-bandwidth .video-grid,
+        .low-bandwidth .audio-grid,
+        .low-bandwidth .games-grid {
+            display: none;
+        }
+        
+        .low-bandwidth .content-card,
+        .low-bandwidth .quiz-card,
+        .low-bandwidth .note-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border-color);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .low-bandwidth .content-card h3,
+        .low-bandwidth .quiz-card h4,
+        .low-bandwidth .note-card h3 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .low-bandwidth .content-card p,
+        .low-bandwidth .quiz-card p,
+        .low-bandwidth .note-card .note-content {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .language-selector {
+                width: 100%;
+            }
+            
+            .language-selector select {
+                width: 100%;
+            }
+            
+            .chat-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .question-bank {
+                grid-template-columns: 1fr;
+            }
+            
+            .planner-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .grades-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+            
+            .grade-card {
+                padding: 1.5rem 0.5rem;
+                min-height: 120px;
+            }
+            
+            .grade-icon {
+                font-size: 2rem;
+            }
+            
+            .grade-title {
+                font-size: 1.1rem;
+            }
+            
+            .ai-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-controls {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification System -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationText">File downloaded successfully!</span>
+    </div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">Loading content...</p>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                Edu<span>Bloom</span>
+            </div>
+            
+            <div class="nav-controls">
+                <div class="mode-toggle" id="modeToggle">
+                    <i class="fas fa-moon"></i>
+                    <span id="modeToggleText">Night Mode</span>
+                </div>
+                <div class="bandwidth-toggle" id="bandwidthToggle">
+                    <i class="fas fa-wifi"></i>
+                    <span id="bandwidthToggleText">High Bandwidth</span>
+                </div>
+                <div class="offline-indicator">
+                    <i class="fas fa-wifi"></i> <span id="offlineText">Offline Mode</span>
+                </div>
+            </div>
+            
+            <div class="user-profile" id="userProfile">
+                <div class="user-avatar" id="userAvatar">S</div>
+                <div>
+                    <div id="userName">Student</div>
+                    <div style="font-size: 0.8rem; opacity: 0.8;" id="userLevelBadge">Grade 4 - Foundation</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Role Selection Page -->
+    <section id="role-page" class="page active">
+        <div class="container role-container">
+            <h2 class="section-title" id="welcomeTitle">
+                Welcome to Edu<span style="color: var(--accent)">Bloom</span>
+                <div class="rural-icon">
+                    <i class="fas fa-school" style="color: var(--accent); margin: 0 10px;"></i>
+                    <i class="fas fa-tree" style="color: var(--success); margin: 0 10px;"></i>
+                    <i class="fas fa-book-open" style="color: var(--warning); margin: 0 10px;"></i>
+                </div>
+            </h2>
+            <p class="section-subtitle" id="welcomeSubtitle">Personalized adaptive learning platform for rural education</p>
+            
+            <div class="role-grid">
+                <div class="role-card student-role" data-role="student">
+                    <div class="role-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3 class="role-title" id="studentRoleTitle">Student</h3>
+                    <p class="role-description" id="studentRoleDesc">Access personalized learning materials, track your progress, complete assignments, and learn at your own pace with adaptive technology.</p>
+                    <div class="btn btn-primary" id="studentBtn">Continue as Student</div>
+                </div>
+                
+                <div class="role-card teacher-role" data-role="teacher">
+                    <div class="role-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3 class="role-title" id="teacherRoleTitle">Teacher</h3>
+                    <p class="role-description" id="teacherRoleDesc">Generate AI-powered lesson plans, manage multi-grade classrooms, monitor student progress, and provide personalized guidance to students.</p>
+                    <div class="btn btn-primary" id="teacherBtn">Continue as Teacher</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Student Auto Login Page -->
+    <section id="student-auto-login-page" class="page student-login">
+        <div class="container auto-login-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 500px; margin-bottom: 2rem;">
+                <h2 class="section-title" id="studentLoginTitle">Student Login</h2>
+                <div class="back-btn" id="backToRole">
+                    <i class="fas fa-arrow-left"></i> <span id="backText">Back</span>
+                </div>
+            </div>
+            
+            <div class="auto-login-card">
+                <div class="auto-login-avatar">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3 id="studentName">Sneha Kumari</h3>
+                <p style="opacity: 0.8; margin-bottom: 2rem;" id="studentInfo">Grade 4 Student, Gramin Shiksha Niketan</p>
+                
+                <div class="auto-login-text" id="autoLoginText">
+                    Auto-login in progress. Please wait...
+                </div>
+                
+                <div class="auto-login-timer" id="studentTimer">
+                    7
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="studentProgress" style="width: 0%"></div>
+                </div>
+                
+                <div class="auto-login-text">
+                    <i class="fas fa-sync-alt fa-spin"></i> <span id="setupText">Setting up your personalized learning environment</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Teacher Auto Login Page -->
+    <section id="teacher-auto-login-page" class="page teacher-login">
+        <div class="container auto-login-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 500px; margin-bottom: 2rem;">
+                <h2 class="section-title" id="teacherLoginTitle">Teacher Login</h2>
+                <div class="back-btn" id="backToRoleTeacher">
+                    <i class="fas fa-arrow-left"></i> <span id="backTextTeacher">Back</span>
+                </div>
+            </div>
+            
+            <div class="auto-login-card">
+                <div class="auto-login-avatar">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h3 id="teacherName">Akash Kumar</h3>
+                <p style="opacity: 0.8; margin-bottom: 2rem;" id="teacherInfo">Mathematics Teacher, Gramin Shiksha Niketan</p>
+                
+                <div class="auto-login-text" id="autoLoginTextTeacher">
+                    Auto-login in progress. Please wait...
+                </div>
+                
+                <div class="auto-login-timer" id="teacherTimer">
+                    7
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="teacherProgress" style="width: 0%"></div>
+                </div>
+                
+                <div class="auto-login-text">
+                    <i class="fas fa-sync-alt fa-spin"></i> <span id="loadingDashboardText">Loading your teacher dashboard</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Grade Selection Page -->
+    <section id="grade-page" class="page">
+        <div class="container grades-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1200px; margin-bottom: 2rem;">
+                <h2 class="section-title" id="selectGradeTitle">Select Your Grade</h2>
+                <div class="back-btn" id="backToStudentLogin">
+                    <i class="fas fa-arrow-left"></i> <span id="backToLoginText">Back to Login</span>
+                </div>
+            </div>
+            <p class="section-subtitle" id="selectGradeSubtitle">Choose your current grade level to access appropriate learning materials</p>
+            
+            <div class="grades-grid">
+                <div class="grade-card" data-grade="nursery">
+                    <div class="grade-icon">
+                        <i class="fas fa-baby"></i>
+                    </div>
+                    <h3 class="grade-title" id="nurseryGrade">Nursery</h3>
+                    <p class="grade-subtitle" id="nurserySubtitle">Pre-School Learning</p>
+                </div>
+                
+                <div class="grade-card" data-grade="1">
+                    <div class="grade-icon">
+                        <i class="fas fa-1"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade1">Grade 1</h3>
+                    <p class="grade-subtitle" id="grade1Subtitle">Basic Foundation</p>
+                </div>
+                
+                <div class="grade-card" data-grade="2">
+                    <div class="grade-icon">
+                        <i class="fas fa-2"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade2">Grade 2</h3>
+                    <p class="grade-subtitle" id="grade2Subtitle">Building Skills</p>
+                </div>
+                
+                <div class="grade-card" data-grade="3">
+                    <div class="grade-icon">
+                        <i class="fas fa-3"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade3">Grade 3</h3>
+                    <p class="grade-subtitle" id="grade3Subtitle">Developing Concepts</p>
+                </div>
+                
+                <div class="grade-card" data-grade="4">
+                    <div class="grade-icon">
+                        <i class="fas fa-4"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade4">Grade 4</h3>
+                    <p class="grade-subtitle" id="grade4Subtitle">Expanding Knowledge</p>
+                </div>
+                
+                <div class="grade-card" data-grade="5">
+                    <div class="grade-icon">
+                        <i class="fas fa-5"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade5">Grade 5</h3>
+                    <p class="grade-subtitle" id="grade5Subtitle">Intermediate Level</p>
+                </div>
+                
+                <div class="grade-card" data-grade="6">
+                    <div class="grade-icon">
+                        <i class="fas fa-6"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade6">Grade 6</h3>
+                    <p class="grade-subtitle" id="grade6Subtitle">Advanced Concepts</p>
+                </div>
+                
+                <div class="grade-card" data-grade="7">
+                    <div class="grade-icon">
+                        <i class="fas fa-7"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade7">Grade 7</h3>
+                    <p class="grade-subtitle" id="grade7Subtitle">Middle School</p>
+                </div>
+                
+                <div class="grade-card" data-grade="8">
+                    <div class="grade-icon">
+                        <i class="fas fa-8"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade8">Grade 8</h3>
+                    <p class="grade-subtitle" id="grade8Subtitle">Pre-High School</p>
+                </div>
+                
+                <div class="grade-card" data-grade="9">
+                    <div class="grade-icon">
+                        <i class="fas fa-9"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade9">Grade 9</h3>
+                    <p class="grade-subtitle" id="grade9Subtitle">High School Level</p>
+                </div>
+                
+                <div class="grade-card" data-grade="10">
+                    <div class="grade-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="grade-title" id="grade10">Grade 10</h3>
+                    <p class="grade-subtitle" id="grade10Subtitle">Board Preparation</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Level Selection Page -->
+    <section id="level-page" class="page">
+        <div class="container levels-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1000px; margin-bottom: 2rem;">
+                <h2 class="section-title" id="selectLevelTitle">Select Your Learning Level</h2>
+                <div class="back-btn" id="backToGrade">
+                    <i class="fas fa-arrow-left"></i> <span id="backToGradeText">Back to Grade Selection</span>
+                </div>
+            </div>
+            <p class="section-subtitle" id="selectLevelSubtitle">Choose the level that matches your current understanding for <span id="currentGradeText">Grade 4</span></p>
+            
+            <div class="levels-grid">
+                <div class="level-card foundation" data-level="foundation">
+                    <div class="level-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h3 class="level-title" id="foundationLevel">Foundation Level</h3>
+                    <p class="level-description" id="foundationDesc">Build strong basics with step-by-step guidance, visual learning, and interactive exercises. Perfect for starting your learning journey.</p>
+                    <div class="btn btn-primary" id="foundationBtn">Select Foundation</div>
+                </div>
+                
+                <div class="level-card intermediate" data-level="intermediate">
+                    <div class="level-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="level-title" id="intermediateLevel">Intermediate Level</h3>
+                    <p class="level-description" id="intermediateDesc">Expand your knowledge with practical applications, problem-solving activities, and concept connections.</p>
+                    <div class="btn btn-primary" id="intermediateBtn">Select Intermediate</div>
+                </div>
+                
+                <div class="level-card advanced" data-level="advanced">
+                    <div class="level-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3 class="level-title" id="advancedLevel">Advanced Level</h3>
+                    <p class="level-description" id="advancedDesc">Master complex topics with critical thinking challenges, real-world projects, and minimal guidance.</p>
+                    <div class="btn btn-primary" id="advancedBtn">Select Advanced</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Student Dashboard -->
+    <section id="student-dashboard-page" class="page student-dashboard">
+        <div class="container dashboard">
+            <div class="dashboard-header">
+                <div class="user-welcome">
+                    <h2 id="welcomeMessage">Welcome back, Sneha!</h2>
+                    <span class="user-level foundation-level" id="levelDisplay">Grade 4 - Foundation Level</span>
+                </div>
+                <div class="language-selector">
+                    <span id="languageLabel">Language:</span>
+                    <select id="languageSelect">
+                        <option value="english">English</option>
+                        <option value="hindi">Hindi</option>
+                        <option value="tamil">Tamil</option>
+                        <option value="telugu">Telugu</option>
+                        <option value="bengali">Bengali</option>
+                        <option value="manipuri">Manipuri</option>
+                    </select>
+                    <button class="offline-btn">
+                        <i class="fas fa-download"></i> <span id="saveOfflineText">Save Offline</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="sidebar">
+                    <div class="back-btn" id="backToLevels" style="margin-bottom: 1.5rem;">
+                        <i class="fas fa-arrow-left"></i> <span id="changeLevelText">Change Level</span>
+                    </div>
+                    <ul class="sidebar-menu">
+                        <li><a href="#" class="menu-item active" data-content="planner"><i class="fas fa-calendar-alt"></i> <span class="menu-text">Study Planner</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="lessons"><i class="fas fa-book-open"></i> <span class="menu-text">Video Lessons</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="audio"><i class="fas fa-headphones"></i> <span class="menu-text">Audio Lessons</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="quizzes"><i class="fas fa-question-circle"></i> <span class="menu-text">Quizzes & Tests</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="games"><i class="fas fa-gamepad"></i> <span class="menu-text">Learning Games</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="art"><i class="fas fa-palette"></i> <span class="menu-text">Art & Craft</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="questionbank"><i class="fas fa-database"></i> <span class="menu-text">Question Bank</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="doubt"><i class="fas fa-comments"></i> <span class="menu-text">Doubt Session</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="notes"><i class="fas fa-sticky-note"></i> <span class="menu-text">Class Notes</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="progress"><i class="fas fa-chart-bar"></i> <span class="menu-text">Progress Tracking</span></a></li>
+                    </ul>
+                </div>
+                
+                <div class="content-area">
+                    <div class="content-header">
+                        <h2 class="content-title" id="contentTitle">Study Planner</h2>
+                        <div class="btn btn-secondary" id="startLesson">
+                            <i class="fas fa-play"></i> <span id="startLearningText">Start Learning</span>
+                        </div>
+                    </div>
+                    
+                    <div id="contentContainer">
+                        <!-- Content will be loaded here based on menu selection -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Teacher Dashboard -->
+    <section id="teacher-dashboard-page" class="page teacher-dashboard">
+        <div class="container dashboard">
+            <div class="dashboard-header">
+                <div class="user-welcome">
+                    <h2 id="teacherWelcome">Welcome, Akash Kumar!</h2>
+                    <span class="user-level" id="teacherDept">Mathematics Department</span>
+                </div>
+                <div class="language-selector">
+                    <span id="teacherLanguageLabel">Language:</span>
+                    <select id="teacherLanguageSelect">
+                        <option value="english">English</option>
+                        <option value="hindi">Hindi</option>
+                    </select>
+                    <button class="offline-btn">
+                        <i class="fas fa-download"></i> <span id="teacherSaveOfflineText">Save Offline</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="sidebar">
+                    <div class="back-btn" id="backToTeacherLogin" style="margin-bottom: 1.5rem;">
+                        <i class="fas fa-arrow-left"></i> <span id="backToLoginTextTeacher">Back to Login</span>
+                    </div>
+                    <ul class="sidebar-menu">
+                        <li><a href="#" class="menu-item active" data-content="teacher-dashboard"><i class="fas fa-tachometer-alt"></i> <span class="menu-text">Dashboard</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="ai-lesson-planning"><i class="fas fa-robot"></i> <span class="menu-text">AI Lesson Planning</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="multi-grade"><i class="fas fa-layer-group"></i> <span class="menu-text">Multi-Grade Classroom</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="teacher-doubts"><i class="fas fa-comments"></i> <span class="menu-text">Doubt Sessions</span></a></li>
+                        <li><a href="#" class="menu-item" data-content="progress-reports"><i class="fas fa-chart-pie"></i> <span class="menu-text">Progress Reports</span></a></li>
+                    </ul>
+                </div>
+                
+                <div class="content-area">
+                    <div class="content-header">
+                        <h2 class="content-title" id="teacherContentTitle">Teacher Dashboard</h2>
+                        <div class="btn btn-secondary">
+                            <i class="fas fa-plus"></i> <span id="createNewText">Create New</span>
+                        </div>
+                    </div>
+                    
+                    <div id="teacherContentContainer">
+                        <!-- Teacher Dashboard Content -->
+                        <div class="teacher-stats">
+                            <div class="stat-card">
+                                <span class="stat-value">24</span>
+                                <div class="stat-label" id="totalStudentsText">Total Students</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">78%</span>
+                                <div class="stat-label" id="avgProgressText">Average Progress</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">12</span>
+                                <div class="stat-label" id="activeLessonsText">Active Lessons</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">5</span>
+                                <div class="stat-label" id="pendingDoubtsText">Pending Doubts</div>
+                            </div>
+                        </div>
+                        
+                        <div class="student-list">
+                            <h3 style="margin-bottom: 1rem;" id="recentActivityText">Recent Student Activity</h3>
+                            <div class="student-item">
+                                <div class="student-avatar">SK</div>
+                                <div class="student-progress">
+                                    <div id="studentActivity1">Sneha Kumari - Completed Math Quiz</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                                <div id="score1">Score: 85%</div>
+                            </div>
+                            <div class="student-item">
+                                <div class="student-avatar">RK</div>
+                                <div class="student-progress">
+                                    <div id="studentActivity2">Rahul Kumar - Watched Science Video</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 72%"></div>
+                                    </div>
+                                </div>
+                                <div id="progress1">Progress: 72%</div>
+                            </div>
+                            <div class="student-item">
+                                <div class="student-avatar">PP</div>
+                                <div class="student-progress">
+                                    <div id="studentActivity3">Priya Patel - Submitted English Assignment</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 91%"></div>
+                                    </div>
+                                </div>
+                                <div id="grade1">Grade: A</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // DOM Elements
+        const pages = document.querySelectorAll('.page');
+        const roleCards = document.querySelectorAll('.role-card');
+        const gradeCards = document.querySelectorAll('.grade-card');
+        const levelCards = document.querySelectorAll('.level-card');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const userProfile = document.getElementById('userProfile');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const userLevelBadge = document.getElementById('userLevelBadge');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const backToLevels = document.getElementById('backToLevels');
+        const backToRole = document.getElementById('backToRole');
+        const backToRoleTeacher = document.getElementById('backToRoleTeacher');
+        const backToGrade = document.getElementById('backToGrade');
+        const backToStudentLogin = document.getElementById('backToStudentLogin');
+        const backToTeacherLogin = document.getElementById('backToTeacherLogin');
+        const languageSelect = document.getElementById('languageSelect');
+        const teacherLanguageSelect = document.getElementById('teacherLanguageSelect');
+        const contentContainer = document.getElementById('contentContainer');
+        const teacherContentContainer = document.getElementById('teacherContentContainer');
+        const contentTitle = document.getElementById('contentTitle');
+        const teacherContentTitle = document.getElementById('teacherContentTitle');
+        const startLesson = document.getElementById('startLesson');
+        const currentGradeText = document.getElementById('currentGradeText');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
+        const loadingScreen = document.getElementById('loadingScreen');
+        const loadingText = document.getElementById('loadingText');
+        const modeToggle = document.getElementById('modeToggle');
+        const bandwidthToggle = document.getElementById('bandwidthToggle');
+        
+        // Auto-login elements
+        const studentTimer = document.getElementById('studentTimer');
+        const studentProgress = document.getElementById('studentProgress');
+        const teacherTimer = document.getElementById('teacherTimer');
+        const teacherProgress = document.getElementById('teacherProgress');
+        
+        // Current user data
+        let currentUserType = null;
+        let currentGrade = null;
+        let currentLevel = null;
+        let isDayMode = false;
+        let isLowBandwidth = false;
+        let currentLanguage = 'english';
+        
+        // Language data
+        const languageData = {
+            english: {
+                // Navigation
+                modeToggleText: "Night Mode",
+                bandwidthToggleText: "High Bandwidth",
+                offlineText: "Offline Mode",
+                
+                // Role Selection
+                welcomeTitle: "Welcome to EduBloom",
+                welcomeSubtitle: "Personalized adaptive learning platform for rural education",
+                studentRoleTitle: "Student",
+                studentRoleDesc: "Access personalized learning materials, track your progress, complete assignments, and learn at your own pace with adaptive technology.",
+                teacherRoleTitle: "Teacher",
+                teacherRoleDesc: "Generate AI-powered lesson plans, manage multi-grade classrooms, monitor student progress, and provide personalized guidance to students.",
+                studentBtn: "Continue as Student",
+                teacherBtn: "Continue as Teacher",
+                
+                // Auto Login
+                studentLoginTitle: "Student Login",
+                teacherLoginTitle: "Teacher Login",
+                backText: "Back",
+                studentName: "Sneha Kumari",
+                studentInfo: "Grade 4 Student, Gramin Shiksha Niketan",
+                teacherName: "Akash Kumar",
+                teacherInfo: "Mathematics Teacher, Gramin Shiksha Niketan",
+                autoLoginText: "Auto-login in progress. Please wait...",
+                setupText: "Setting up your personalized learning environment",
+                loadingDashboardText: "Loading your teacher dashboard",
+                
+                // Grade Selection
+                selectGradeTitle: "Select Your Grade",
+                backToLoginText: "Back to Login",
+                selectGradeSubtitle: "Choose your current grade level to access appropriate learning materials",
+                nurseryGrade: "Nursery",
+                nurserySubtitle: "Pre-School Learning",
+                grade1: "Grade 1",
+                grade1Subtitle: "Basic Foundation",
+                grade2: "Grade 2",
+                grade2Subtitle: "Building Skills",
+                grade3: "Grade 3",
+                grade3Subtitle: "Developing Concepts",
+                grade4: "Grade 4",
+                grade4Subtitle: "Expanding Knowledge",
+                grade5: "Grade 5",
+                grade5Subtitle: "Intermediate Level",
+                grade6: "Grade 6",
+                grade6Subtitle: "Advanced Concepts",
+                grade7: "Grade 7",
+                grade7Subtitle: "Middle School",
+                grade8: "Grade 8",
+                grade8Subtitle: "Pre-High School",
+                grade9: "Grade 9",
+                grade9Subtitle: "High School Level",
+                grade10: "Grade 10",
+                grade10Subtitle: "Board Preparation",
+                
+                // Level Selection
+                selectLevelTitle: "Select Your Learning Level",
+                backToGradeText: "Back to Grade Selection",
+                selectLevelSubtitle: "Choose the level that matches your current understanding for",
+                foundationLevel: "Foundation Level",
+                foundationDesc: "Build strong basics with step-by-step guidance, visual learning, and interactive exercises. Perfect for starting your learning journey.",
+                intermediateLevel: "Intermediate Level",
+                intermediateDesc: "Expand your knowledge with practical applications, problem-solving activities, and concept connections.",
+                advancedLevel: "Advanced Level",
+                advancedDesc: "Master complex topics with critical thinking challenges, real-world projects, and minimal guidance.",
+                foundationBtn: "Select Foundation",
+                intermediateBtn: "Select Intermediate",
+                advancedBtn: "Select Advanced",
+                
+                // Dashboard
+                languageLabel: "Language:",
+                saveOfflineText: "Save Offline",
+                changeLevelText: "Change Level",
+                startLearningText: "Start Learning",
+                teacherWelcome: "Welcome, Akash Kumar!",
+                teacherDept: "Mathematics Department",
+                teacherLanguageLabel: "Language:",
+                teacherSaveOfflineText: "Save Offline",
+                backToLoginTextTeacher: "Back to Login",
+                createNewText: "Create New",
+                totalStudentsText: "Total Students",
+                avgProgressText: "Average Progress",
+                activeLessonsText: "Active Lessons",
+                pendingDoubtsText: "Pending Doubts",
+                recentActivityText: "Recent Student Activity",
+                studentActivity1: "Sneha Kumari - Completed Math Quiz",
+                studentActivity2: "Rahul Kumar - Watched Science Video",
+                studentActivity3: "Priya Patel - Submitted English Assignment",
+                score1: "Score: 85%",
+                progress1: "Progress: 72%",
+                grade1: "Grade: A",
+                
+                // Menu Items
+                menuItems: {
+                    planner: "Study Planner",
+                    lessons: "Video Lessons",
+                    audio: "Audio Lessons",
+                    quizzes: "Quizzes & Tests",
+                    games: "Learning Games",
+                    art: "Art & Craft",
+                    questionbank: "Question Bank",
+                    doubt: "Doubt Session",
+                    notes: "Class Notes",
+                    progress: "Progress Tracking",
+                    teacherDashboard: "Dashboard",
+                    aiLessonPlanning: "AI Lesson Planning",
+                    multiGrade: "Multi-Grade Classroom",
+                    teacherDoubts: "Doubt Sessions",
+                    progressReports: "Progress Reports"
+                }
+            },
+            hindi: {
+                // Navigation
+                modeToggleText: "रात मोड",
+                bandwidthToggleText: "उच्च बैंडविड्थ",
+                offlineText: "ऑफलाइन मोड",
+                
+                // Role Selection
+                welcomeTitle: "एडुब्लूम में आपका स्वागत है",
+                welcomeSubtitle: "ग्रामीण शिक्षा के लिए व्यक्तिगत अनुकूली शिक्षण मंच",
+                studentRoleTitle: "छात्र",
+                studentRoleDesc: "व्यक्तिगत शिक्षण सामग्री तक पहुंचें, अपनी प्रगति को ट्रैक करें, असाइनमेंट पूरा करें, और अनुकूली तकनीक के साथ अपनी गति से सीखें।",
+                teacherRoleTitle: "शिक्षक",
+                teacherRoleDesc: "एआई-संचालित पाठ योजनाएं तैयार करें, बहु-ग्रेड कक्षाओं का प्रबंधन करें, छात्र प्रगति की निगरानी करें, और छात्रों को व्यक्तिगत मार्गदर्शन प्रदान करें।",
+                studentBtn: "छात्र के रूप में जारी रखें",
+                teacherBtn: "शिक्षक के रूप में जारी रखें",
+                
+                // Auto Login
+                studentLoginTitle: "छात्र लॉगिन",
+                teacherLoginTitle: "शिक्षक लॉगिन",
+                backText: "वापस",
+                studentName: "स्नेहा कुमारी",
+                studentInfo: "कक्षा 4 की छात्रा, ग्रामीण शिक्षा निकेतन",
+                teacherName: "आकाश कुमार",
+                teacherInfo: "गणित शिक्षक, ग्रामीण शिक्षा निकेतन",
+                autoLoginText: "ऑटो-लॉगिन प्रगति पर है। कृपया प्रतीक्षा करें...",
+                setupText: "आपके व्यक्तिगत शिक्षण वातावरण को सेटअप किया जा रहा है",
+                loadingDashboardText: "आपका शिक्षक डैशबोर्ड लोड हो रहा है",
+                
+                // Grade Selection
+                selectGradeTitle: "अपनी कक्षा चुनें",
+                backToLoginText: "लॉगिन पर वापस जाएं",
+                selectGradeSubtitle: "उचित शिक्षण सामग्री तक पहुंचने के लिए अपनी वर्तमान कक्षा स्तर चुनें",
+                nurseryGrade: "नर्सरी",
+                nurserySubtitle: "प्री-स्कूल लर्निंग",
+                grade1: "कक्षा 1",
+                grade1Subtitle: "बुनियादी नींव",
+                grade2: "कक्षा 2",
+                grade2Subtitle: "कौशल निर्माण",
+                grade3: "कक्षा 3",
+                grade3Subtitle: "अवधारणा विकास",
+                grade4: "कक्षा 4",
+                grade4Subtitle: "ज्ञान विस्तार",
+                grade5: "कक्षा 5",
+                grade5Subtitle: "मध्यवर्ती स्तर",
+                grade6: "कक्षा 6",
+                grade6Subtitle: "उन्नत अवधारणाएं",
+                grade7: "कक्षा 7",
+                grade7Subtitle: "मिडिल स्कूल",
+                grade8: "कक्षा 8",
+                grade8Subtitle: "प्री-हाई स्कूल",
+                grade9: "कक्षा 9",
+                grade9Subtitle: "हाई स्कूल स्तर",
+                grade10: "कक्षा 10",
+                grade10Subtitle: "बोर्ड तैयारी",
+                
+                // Level Selection
+                selectLevelTitle: "अपना शिक्षण स्तर चुनें",
+                backToGradeText: "कक्षा चयन पर वापस जाएं",
+                selectLevelSubtitle: "अपनी वर्तमान समझ से मेल खाने वाला स्तर चुनें",
+                foundationLevel: "फाउंडेशन स्तर",
+                foundationDesc: "चरण-दर-चरण मार्गदर्शन, दृश्य शिक्षण और इंटरैक्टिव अभ्यासों के साथ मजबूत बुनियाद बनाएं। अपनी शिक्षण यात्रा शुरू करने के लिए बिल्कुल सही।",
+                intermediateLevel: "इंटरमीडिएट स्तर",
+                intermediateDesc: "व्यावहारिक अनुप्रयोगों, समस्या-समाधान गतिविधियों और अवधारणा कनेक्शनों के साथ अपने ज्ञान का विस्तार करें।",
+                advancedLevel: "एडवांस्ड स्तर",
+                advancedDesc: "मिनिमल गाइडेंस के साथ क्रिटिकल थिंकिंग चैलेंजेज, रियल-वर्ल्ड प्रोजेक्ट्स और कॉम्प्लेक्स टॉपिक्स में महारत हासिल करें।",
+                foundationBtn: "फाउंडेशन चुनें",
+                intermediateBtn: "इंटरमीडिएट चुनें",
+                advancedBtn: "एडवांस्ड चुनें",
+                
+                // Dashboard
+                languageLabel: "भाषा:",
+                saveOfflineText: "ऑफलाइन सेव करें",
+                changeLevelText: "स्तर बदलें",
+                startLearningText: "सीखना शुरू करें",
+                teacherWelcome: "आकाश कुमार, आपका स्वागत है!",
+                teacherDept: "गणित विभाग",
+                teacherLanguageLabel: "भाषा:",
+                teacherSaveOfflineText: "ऑफलाइन सेव करें",
+                backToLoginTextTeacher: "लॉगिन पर वापस जाएं",
+                createNewText: "नया बनाएं",
+                totalStudentsText: "कुल छात्र",
+                avgProgressText: "औसत प्रगति",
+                activeLessonsText: "सक्रिय पाठ",
+                pendingDoubtsText: "लंबित संदेह",
+                recentActivityText: "हाल की छात्र गतिविधि",
+                studentActivity1: "स्नेहा कुमारी - गणित क्विज पूरी की",
+                studentActivity2: "राहुल कुमार - विज्ञान वीडियो देखा",
+                studentActivity3: "प्रिया पटेल - अंग्रेजी असाइनमेंट जमा किया",
+                score1: "स्कोर: 85%",
+                progress1: "प्रगति: 72%",
+                grade1: "ग्रेड: A",
+                
+                // Menu Items
+                menuItems: {
+                    planner: "अध्ययन योजनाकार",
+                    lessons: "वीडियो पाठ",
+                    audio: "ऑडियो पाठ",
+                    quizzes: "क्विज और टेस्ट",
+                    games: "शिक्षण खेल",
+                    art: "कला और शिल्प",
+                    questionbank: "प्रश्न बैंक",
+                    doubt: "संदेह सत्र",
+                    notes: "कक्षा नोट्स",
+                    progress: "प्रगति ट्रैकिंग",
+                    teacherDashboard: "डैशबोर्ड",
+                    aiLessonPlanning: "एआई पाठ योजना",
+                    multiGrade: "बहु-ग्रेड कक्षा",
+                    teacherDoubts: "संदेह सत्र",
+                    progressReports: "प्रगति रिपोर्ट"
+                }
+            }
+        };
+
+        // Teacher doubts data
+        const teacherDoubts = [
+            {
+                student: "Sneha Kumari",
+                grade: "Grade 4",
+                subject: "Mathematics",
+                time: "2 hours ago",
+                question: "I don't understand how to solve fractions with different denominators. Can you explain with an example?"
+            },
+            {
+                student: "Rahul Kumar", 
+                grade: "Grade 3",
+                subject: "Science",
+                time: "1 hour ago",
+                question: "What is the difference between living and non-living things? I'm confused about plants."
+            },
+            {
+                student: "Priya Patel",
+                grade: "Grade 5", 
+                subject: "English",
+                time: "30 minutes ago",
+                question: "How do I use 'has' and 'have' correctly in sentences? I keep making mistakes."
+            },
+            {
+                student: "Anjali Sharma",
+                grade: "Grade 4",
+                subject: "Mathematics", 
+                time: "15 minutes ago",
+                question: "Can you help me with the multiplication table of 7? I'm having trouble memorizing it."
+            }
+        ];
+        
+        // Grade-specific content data
+        const gradeContent = {
+            'nursery': {
+                videos: [
+                    { title: 'ABC Alphabet Song', subject: 'Alphabets', duration: '8:30' },
+                    { title: 'Numbers 1-10', subject: 'Counting', duration: '6:45' },
+                    { title: 'Colors for Kids', subject: 'Colors', duration: '7:20' },
+                    { title: 'Animal Friends', subject: 'Animals', duration: '9:10' }
+                ],
+                audio: [
+                    { title: 'Nursery Rhymes Collection', type: 'Rhymes', duration: '15:30' },
+                    { title: 'Animal Sounds Story', type: 'Story', duration: '8:45' },
+                    { title: 'Good Habits Song', type: 'Song', duration: '5:20' },
+                    { title: 'Fairy Tales Audio Book', type: 'Story', duration: '12:00' }
+                ],
+                quizzes: [
+                    { title: 'Color Recognition', subject: 'Colors', time: '10 min', questions: 8 },
+                    { title: 'Animal Sounds Quiz', subject: 'Animals', time: '8 min', questions: 6 },
+                    { title: 'Shape Matching', subject: 'Shapes', time: '12 min', questions: 10 },
+                    { title: 'Alphabet Recognition', subject: 'Alphabets', time: '15 min', questions: 12 }
+                ],
+                games: [
+                    { title: 'Alphabet Puzzle', type: 'Puzzle', icon: 'fas fa-puzzle-piece' },
+                    { title: 'Color Match', type: 'Matching', icon: 'fas fa-palette' },
+                    { title: 'Animal Memory', type: 'Memory', icon: 'fas fa-brain' },
+                    { title: 'Number Bubbles', type: 'Counting', icon: 'fas fa-bubbles' }
+                ],
+                subjects: ['Alphabets', 'Numbers', 'Colors', 'Shapes', 'Animals', 'Rhymes']
+            },
+            '4': {
+                videos: [
+                    { title: 'Multiplication Tables', subject: 'Mathematics', duration: '18:30' },
+                    { title: 'Parts of Speech', subject: 'English', duration: '22:15' },
+                    { title: 'Solar System', subject: 'Science', duration: '25:40' },
+                    { title: 'Indian States & Capitals', subject: 'Social Studies', duration: '20:10' }
+                ],
+                audio: [
+                    { title: 'Multiplication Rap', type: 'Song', duration: '6:30' },
+                    { title: 'Science Facts Podcast', type: 'Educational', duration: '12:45' },
+                    { title: 'Historical Stories', type: 'Story', duration: '18:20' },
+                    { title: 'Grammar Rules Audio Guide', type: 'Educational', duration: '15:00' }
+                ],
+                quizzes: [
+                    { title: 'Multiplication Test', subject: 'Mathematics', time: '30 min', questions: 25 },
+                    { title: 'Grammar Assessment', subject: 'English', time: '25 min', questions: 20 },
+                    { title: 'Science Quiz', subject: 'Science', time: '20 min', questions: 15 },
+                    { title: 'Geography Test', subject: 'Social Studies', time: '30 min', questions: 22 }
+                ],
+                games: [
+                    { title: 'Math Crossword', type: 'Puzzle', icon: 'fas fa-crossword' },
+                    { title: 'Word Search', type: 'Puzzle', icon: 'fas fa-search' },
+                    { title: 'Science Trivia', type: 'Quiz', icon: 'fas fa-brain' },
+                    { title: 'Geography Challenge', type: 'Adventure', icon: 'fas fa-globe-asia' }
+                ],
+                subjects: ['Mathematics', 'English', 'Hindi', 'Science', 'Social Studies', 'Computer']
+            },
+            '10': {
+                videos: [
+                    { title: 'Quadratic Equations', subject: 'Mathematics', duration: '28:30' },
+                    { title: 'Chemical Reactions', subject: 'Science', duration: '32:15' },
+                    { title: 'Indian Constitution', subject: 'Civics', duration: '35:40' },
+                    { title: 'Trigonometry Basics', subject: 'Mathematics', duration: '30:10' }
+                ],
+                audio: [
+                    { title: 'Physics Concepts', type: 'Educational', duration: '16:30' },
+                    { title: 'History Timeline', type: 'Educational', duration: '22:45' },
+                    { title: 'Grammar Revision', type: 'Educational', duration: '28:20' },
+                    { title: 'Math Formulas', type: 'Educational', duration: '25:00' }
+                ],
+                quizzes: [
+                    { title: 'Algebra Test', subject: 'Mathematics', time: '45 min', questions: 35 },
+                    { title: 'Science Board Prep', subject: 'Science', time: '50 min', questions: 40 },
+                    { title: 'Social Studies Mock', subject: 'Social Studies', time: '40 min', questions: 30 },
+                    { title: 'English Grammar', subject: 'English', time: '35 min', questions: 25 }
+                ],
+                games: [
+                    { title: 'Math Challenge', type: 'Puzzle', icon: 'fas fa-calculator' },
+                    { title: 'Science Quiz', type: 'Quiz', icon: 'fas fa-flask' },
+                    { title: 'History Timeline', type: 'Strategy', icon: 'fas fa-history' },
+                    { title: 'Grammar Master', type: 'Word', icon: 'fas fa-language' }
+                ],
+                subjects: ['Mathematics', 'Science', 'English', 'Hindi', 'Social Studies', 'Computer']
+            }
+        };
+        
+        // Show notification
+        function showNotification(message, type = 'success') {
+            notificationText.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Show loading screen
+        function showLoading(message = 'Loading...') {
+            loadingText.textContent = message;
+            loadingScreen.style.display = 'flex';
+        }
+        
+        // Hide loading screen
+        function hideLoading() {
+            loadingScreen.style.display = 'none';
+        }
+        
+        // Simulate download
+        function simulateDownload() {
+            showLoading('Downloading file...');
+            setTimeout(() => {
+                hideLoading();
+                showNotification('File downloaded successfully! You can access it in offline mode.');
+            }, 1500);
+        }
+        
+        // Simulate video play
+        function simulateVideoPlay() {
+            showLoading('Opening video player...');
+            setTimeout(() => {
+                hideLoading();
+                showNotification('Video is now playing in full screen mode.');
+            }, 1000);
+        }
+        
+        // Toggle Day/Night Mode
+        function toggleDayNightMode() {
+            isDayMode = !isDayMode;
+            if (isDayMode) {
+                document.body.classList.add('day-mode');
+                modeToggle.innerHTML = '<i class="fas fa-sun"></i><span id="modeToggleText">Day Mode</span>';
+                showNotification('Switched to Day Mode');
+            } else {
+                document.body.classList.remove('day-mode');
+                modeToggle.innerHTML = '<i class="fas fa-moon"></i><span id="modeToggleText">Night Mode</span>';
+                showNotification('Switched to Night Mode');
+            }
+            
+            // Update language text
+            updateLanguageText();
+            
+            // Save preference to localStorage
+            localStorage.setItem('eduBloomDayMode', isDayMode);
+        }
+        
+        // Toggle Bandwidth Mode
+        function toggleBandwidthMode() {
+            isLowBandwidth = !isLowBandwidth;
+            if (isLowBandwidth) {
+                document.body.classList.add('low-bandwidth');
+                bandwidthToggle.innerHTML = '<i class="fas fa-signal"></i><span id="bandwidthToggleText">Low Bandwidth</span>';
+                showNotification('Switched to Low Bandwidth Mode');
+            } else {
+                document.body.classList.remove('low-bandwidth');
+                bandwidthToggle.innerHTML = '<i class="fas fa-wifi"></i><span id="bandwidthToggleText">High Bandwidth</span>';
+                showNotification('Switched to High Bandwidth Mode');
+            }
+            
+            // Update language text
+            updateLanguageText();
+            
+            // Save preference to localStorage
+            localStorage.setItem('eduBloomLowBandwidth', isLowBandwidth);
+        }
+        
+        // Update all text based on current language
+        function updateLanguageText() {
+            const langData = languageData[currentLanguage];
+            
+            // Update navigation
+            document.getElementById('modeToggleText').textContent = langData.modeToggleText;
+            document.getElementById('bandwidthToggleText').textContent = langData.bandwidthToggleText;
+            document.getElementById('offlineText').textContent = langData.offlineText;
+            
+            // Update role selection page
+            document.getElementById('welcomeTitle').innerHTML = langData.welcomeTitle.replace('EduBloom', 'Edu<span style="color: var(--accent)">Bloom</span>');
+            document.getElementById('welcomeSubtitle').textContent = langData.welcomeSubtitle;
+            document.getElementById('studentRoleTitle').textContent = langData.studentRoleTitle;
+            document.getElementById('studentRoleDesc').textContent = langData.studentRoleDesc;
+            document.getElementById('teacherRoleTitle').textContent = langData.teacherRoleTitle;
+            document.getElementById('teacherRoleDesc').textContent = langData.teacherRoleDesc;
+            document.getElementById('studentBtn').textContent = langData.studentBtn;
+            document.getElementById('teacherBtn').textContent = langData.teacherBtn;
+            
+            // Update auto login pages
+            document.getElementById('studentLoginTitle').textContent = langData.studentLoginTitle;
+            document.getElementById('teacherLoginTitle').textContent = langData.teacherLoginTitle;
+            document.getElementById('backText').textContent = langData.backText;
+            document.getElementById('backTextTeacher').textContent = langData.backText;
+            document.getElementById('studentName').textContent = langData.studentName;
+            document.getElementById('studentInfo').textContent = langData.studentInfo;
+            document.getElementById('teacherName').textContent = langData.teacherName;
+            document.getElementById('teacherInfo').textContent = langData.teacherInfo;
+            document.getElementById('autoLoginText').textContent = langData.autoLoginText;
+            document.getElementById('autoLoginTextTeacher').textContent = langData.autoLoginText;
+            document.getElementById('setupText').textContent = langData.setupText;
+            document.getElementById('loadingDashboardText').textContent = langData.loadingDashboardText;
+            
+            // Update grade selection page
+            document.getElementById('selectGradeTitle').textContent = langData.selectGradeTitle;
+            document.getElementById('backToLoginText').textContent = langData.backToLoginText;
+            document.getElementById('selectGradeSubtitle').textContent = langData.selectGradeSubtitle;
+            document.getElementById('nurseryGrade').textContent = langData.nurseryGrade;
+            document.getElementById('nurserySubtitle').textContent = langData.nurserySubtitle;
+            document.getElementById('grade1').textContent = langData.grade1;
+            document.getElementById('grade1Subtitle').textContent = langData.grade1Subtitle;
+            document.getElementById('grade2').textContent = langData.grade2;
+            document.getElementById('grade2Subtitle').textContent = langData.grade2Subtitle;
+            document.getElementById('grade3').textContent = langData.grade3;
+            document.getElementById('grade3Subtitle').textContent = langData.grade3Subtitle;
+            document.getElementById('grade4').textContent = langData.grade4;
+            document.getElementById('grade4Subtitle').textContent = langData.grade4Subtitle;
+            document.getElementById('grade5').textContent = langData.grade5;
+            document.getElementById('grade5Subtitle').textContent = langData.grade5Subtitle;
+            document.getElementById('grade6').textContent = langData.grade6;
+            document.getElementById('grade6Subtitle').textContent = langData.grade6Subtitle;
+            document.getElementById('grade7').textContent = langData.grade7;
+            document.getElementById('grade7Subtitle').textContent = langData.grade7Subtitle;
+            document.getElementById('grade8').textContent = langData.grade8;
+            document.getElementById('grade8Subtitle').textContent = langData.grade8Subtitle;
+            document.getElementById('grade9').textContent = langData.grade9;
+            document.getElementById('grade9Subtitle').textContent = langData.grade9Subtitle;
+            document.getElementById('grade10').textContent = langData.grade10;
+            document.getElementById('grade10Subtitle').textContent = langData.grade10Subtitle;
+            
+            // Update level selection page
+            document.getElementById('selectLevelTitle').textContent = langData.selectLevelTitle;
+            document.getElementById('backToGradeText').textContent = langData.backToGradeText;
+            document.getElementById('selectLevelSubtitle').textContent = langData.selectLevelSubtitle + ' ' + document.getElementById('currentGradeText').textContent;
+            document.getElementById('foundationLevel').textContent = langData.foundationLevel;
+            document.getElementById('foundationDesc').textContent = langData.foundationDesc;
+            document.getElementById('intermediateLevel').textContent = langData.intermediateLevel;
+            document.getElementById('intermediateDesc').textContent = langData.intermediateDesc;
+            document.getElementById('advancedLevel').textContent = langData.advancedLevel;
+            document.getElementById('advancedDesc').textContent = langData.advancedDesc;
+            document.getElementById('foundationBtn').textContent = langData.foundationBtn;
+            document.getElementById('intermediateBtn').textContent = langData.intermediateBtn;
+            document.getElementById('advancedBtn').textContent = langData.advancedBtn;
+            
+            // Update student dashboard
+            document.getElementById('languageLabel').textContent = langData.languageLabel;
+            document.getElementById('saveOfflineText').textContent = langData.saveOfflineText;
+            document.getElementById('changeLevelText').textContent = langData.changeLevelText;
+            document.getElementById('startLearningText').textContent = langData.startLearningText;
+            
+            // Update teacher dashboard
+            document.getElementById('teacherWelcome').textContent = langData.teacherWelcome;
+            document.getElementById('teacherDept').textContent = langData.teacherDept;
+            document.getElementById('teacherLanguageLabel').textContent = langData.teacherLanguageLabel;
+            document.getElementById('teacherSaveOfflineText').textContent = langData.teacherSaveOfflineText;
+            document.getElementById('backToLoginTextTeacher').textContent = langData.backToLoginTextTeacher;
+            document.getElementById('createNewText').textContent = langData.createNewText;
+            document.getElementById('totalStudentsText').textContent = langData.totalStudentsText;
+            document.getElementById('avgProgressText').textContent = langData.avgProgressText;
+            document.getElementById('activeLessonsText').textContent = langData.activeLessonsText;
+            document.getElementById('pendingDoubtsText').textContent = langData.pendingDoubtsText;
+            document.getElementById('recentActivityText').textContent = langData.recentActivityText;
+            document.getElementById('studentActivity1').textContent = langData.studentActivity1;
+            document.getElementById('studentActivity2').textContent = langData.studentActivity2;
+            document.getElementById('studentActivity3').textContent = langData.studentActivity3;
+            document.getElementById('score1').textContent = langData.score1;
+            document.getElementById('progress1').textContent = langData.progress1;
+            document.getElementById('grade1').textContent = langData.grade1;
+            
+            // Update menu items
+            document.querySelectorAll('.menu-text').forEach((item, index) => {
+                const menuKey = Object.keys(langData.menuItems)[index];
+                item.textContent = langData.menuItems[menuKey];
+            });
+        }
+        
+        // Change language
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            updateLanguageText();
+            showNotification(`Language changed to ${lang === 'english' ? 'English' : 'Hindi'}`);
+            
+            // Save preference to localStorage
+            localStorage.setItem('eduBloomLanguage', lang);
+        }
+        
+        // Show specific page
+        function showPage(pageId) {
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+        
+        // Role selection
+        roleCards.forEach(card => {
+            card.addEventListener('click', () => {
+                currentUserType = card.dataset.role;
+                
+                if (currentUserType === 'student') {
+                    showPage('student-auto-login-page');
+                    startAutoLogin('student');
+                } else if (currentUserType === 'teacher') {
+                    showPage('teacher-auto-login-page');
+                    startAutoLogin('teacher');
+                }
+            });
+        });
+        
+        // Auto-login functionality
+        function startAutoLogin(userType) {
+            let timerElement, progressElement;
+            let seconds = 7;
+            
+            if (userType === 'student') {
+                timerElement = studentTimer;
+                progressElement = studentProgress;
+            } else {
+                timerElement = teacherTimer;
+                progressElement = teacherProgress;
+            }
+            
+            const countdown = setInterval(() => {
+                seconds--;
+                timerElement.textContent = seconds;
+                progressElement.style.width = `${((7 - seconds) / 7) * 100}%`;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdown);
+                    completeAutoLogin(userType);
+                }
+            }, 1000);
+        }
+        
+        // Complete auto-login
+        function completeAutoLogin(userType) {
+            if (userType === 'student') {
+                // Update user profile in navbar
+                userAvatar.textContent = 'S';
+                userName.textContent = languageData[currentLanguage].studentName;
+                userLevelBadge.textContent = 'Grade 4 - Foundation';
+                userProfile.style.display = 'flex';
+                
+                // Move to grade selection
+                showPage('grade-page');
+            } else {
+                // Update user profile in navbar
+                userAvatar.textContent = 'A';
+                userName.textContent = languageData[currentLanguage].teacherName;
+                userLevelBadge.textContent = 'Mathematics Teacher';
+                userProfile.style.display = 'flex';
+                
+                // Move to teacher dashboard
+                showPage('teacher-dashboard-page');
+            }
+        }
+        
+        // Grade selection
+        gradeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                currentGrade = card.dataset.grade;
+                const gradeName = card.querySelector('.grade-title').textContent;
+                
+                // Update level selection page
+                currentGradeText.textContent = gradeName;
+                document.getElementById('selectLevelSubtitle').textContent = 
+                    languageData[currentLanguage].selectLevelSubtitle + ' ' + gradeName;
+                
+                // Move to level selection
+                showPage('level-page');
+            });
+        });
+        
+        // Level selection
+        levelCards.forEach(card => {
+            card.addEventListener('click', () => {
+                currentLevel = card.dataset.level;
+                const levelName = card.querySelector('.level-title').textContent;
+                
+                // Update user level in navbar
+                userLevelBadge.textContent = `Grade ${currentGrade} - ${levelName}`;
+                userLevelBadge.className = 'user-level ' + currentLevel + '-level';
+                
+                // Update dashboard
+                welcomeMessage.textContent = `Welcome back, ${languageData[currentLanguage].studentName.split(' ')[0]}!`;
+                levelDisplay.textContent = `Grade ${currentGrade} - ${levelName}`;
+                levelDisplay.className = 'user-level ' + currentLevel + '-level';
+                
+                // Move to dashboard
+                showPage('student-dashboard-page');
+                
+                // Load initial content
+                loadContent('planner');
+            });
+        });
+        
+        // Back button functionality
+        backToLevels.addEventListener('click', () => {
+            showPage('level-page');
+        });
+        
+        backToRole.addEventListener('click', () => {
+            showPage('role-page');
+        });
+        
+        backToRoleTeacher.addEventListener('click', () => {
+            showPage('role-page');
+        });
+        
+        backToGrade.addEventListener('click', () => {
+            showPage('grade-page');
+        });
+        
+        backToStudentLogin.addEventListener('click', () => {
+            showPage('student-auto-login-page');
+            startAutoLogin('student');
+        });
+        
+        backToTeacherLogin.addEventListener('click', () => {
+            showPage('teacher-auto-login-page');
+            startAutoLogin('teacher');
+        });
+        
+        // Menu item selection
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Update active menu item
+                menuItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                
+                // Load content
+                const contentType = item.dataset.content;
+                if (currentUserType === 'student') {
+                    loadContent(contentType);
+                } else {
+                    loadTeacherContent(contentType);
+                }
+            });
+        });
+        
+        // Language selection
+        if (languageSelect) {
+            languageSelect.addEventListener('change', (e) => {
+                changeLanguage(e.target.value);
+            });
+        }
+        
+        if (teacherLanguageSelect) {
+            teacherLanguageSelect.addEventListener('change', (e) => {
+                changeLanguage(e.target.value);
+            });
+        }
+        
+        // Start lesson button
+        if (startLesson) {
+            startLesson.addEventListener('click', () => {
+                showNotification(`Starting ${contentTitle.textContent} for Grade ${currentGrade} - ${currentLevel} level!`);
+            });
+        }
+        
+        // Mode toggle buttons
+        modeToggle.addEventListener('click', toggleDayNightMode);
+        bandwidthToggle.addEventListener('click', toggleBandwidthMode);
+        
+        // Load student content based on selection
+        function loadContent(type) {
+            let contentHTML = '';
+            let title = '';
+            
+            // Get content for current grade or use default
+            const contentData = gradeContent[currentGrade] || gradeContent['4'];
+            
+            switch(type) {
+                case 'planner':
+                    title = languageData[currentLanguage].menuItems.planner;
+                    contentHTML = `
+                        <div class="planner-container">
+                            <div class="planner-sidebar">
+                                <h3 style="margin-bottom: 1rem;">Study Periods</h3>
+                                <ul class="planner-periods">
+                                    <li class="active">Weekly Plan</li>
+                                    <li>Monthly Plan</li>
+                                    <li>Daily Schedule</li>
+                                    <li>Exam Preparation</li>
+                                </ul>
+                                <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="simulateDownload()">
+                                    <i class="fas fa-download"></i> Download Plan
+                                </button>
+                            </div>
+                            <div class="planner-content">
+                                <h3>Weekly Study Plan - Grade ${currentGrade}</h3>
+                                <p style="opacity: 0.8; margin-bottom: 1rem;">Your personalized study schedule for this week</p>
+                                
+                                <div class="planner-schedule">
+                                    <div class="schedule-day">
+                                        <h4>Monday</h4>
+                                        ${contentData.subjects.slice(0, 3).map(subject => 
+                                            `<div class="schedule-item">${subject} (9:00-10:00)</div>`
+                                        ).join('')}
+                                    </div>
+                                    <div class="schedule-day">
+                                        <h4>Tuesday</h4>
+                                        ${contentData.subjects.slice(3, 6).map(subject => 
+                                            `<div class="schedule-item">${subject} (11:00-12:00)</div>`
+                                        ).join('')}
+                                    </div>
+                                    <div class="schedule-day">
+                                        <h4>Wednesday</h4>
+                                        ${contentData.subjects.slice(0, 3).map(subject => 
+                                            `<div class="schedule-item">${subject} Revision (2:00-3:00)</div>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'lessons':
+                    title = languageData[currentLanguage].menuItems.lessons;
+                    contentHTML = `
+                        <div class="video-grid">
+                            ${contentData.videos.map(video => `
+                                <div class="video-card">
+                                    <div class="video-thumbnail">
+                                        <i class="fas fa-play-circle"></i>
+                                        <div class="video-duration">${video.duration}</div>
+                                    </div>
+                                    <div class="video-info">
+                                        <h4>${video.title}</h4>
+                                        <p>${video.subject} • Grade ${currentGrade} • ${currentLevel}</p>
+                                        <button class="btn btn-primary" onclick="simulateVideoPlay()">
+                                            <i class="fas fa-play"></i> Watch Now
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'audio':
+                    title = languageData[currentLanguage].menuItems.audio;
+                    contentHTML = `
+                        <div class="audio-grid">
+                            ${contentData.audio.map(audio => `
+                                <div class="audio-card">
+                                    <div class="audio-icon">
+                                        <i class="fas fa-headphones"></i>
+                                    </div>
+                                    <div class="audio-info">
+                                        <h4>${audio.title}</h4>
+                                        <p>${audio.type} • ${audio.duration}</p>
+                                        <button class="btn btn-primary" onclick="showNotification('Audio is now playing in background')">
+                                            <i class="fas fa-play"></i> Play
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'quizzes':
+                    title = languageData[currentLanguage].menuItems.quizzes;
+                    contentHTML = `
+                        <div class="quiz-grid">
+                            ${contentData.quizzes.map(quiz => `
+                                <div class="quiz-card">
+                                    <div class="quiz-header">
+                                        <h4>${quiz.title}</h4>
+                                        <div class="quiz-time">${quiz.time}</div>
+                                    </div>
+                                    <p>${quiz.subject} • ${quiz.questions} questions • ${currentLevel} Level</p>
+                                    <button class="btn btn-primary" onclick="showLoading('Starting quiz...'); setTimeout(hideLoading, 1500)">
+                                        <i class="fas fa-play"></i> Start Quiz
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'games':
+                    title = languageData[currentLanguage].menuItems.games;
+                    contentHTML = `
+                        <div class="games-grid">
+                            ${contentData.games.map(game => `
+                                <div class="game-card">
+                                    <div class="game-icon">
+                                        <i class="${game.icon}"></i>
+                                    </div>
+                                    <h4>${game.title}</h4>
+                                    <p>${game.type} Game • Grade ${currentGrade}</p>
+                                    <button class="btn btn-primary" style="margin-top: 1rem;" onclick="showLoading('Loading game...'); setTimeout(hideLoading, 2000)">
+                                        <i class="fas fa-play"></i> Play Now
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'art':
+                    title = languageData[currentLanguage].menuItems.art;
+                    contentHTML = `
+                        <div class="art-container">
+                            <h3>Digital Art Board - Grade ${currentGrade}</h3>
+                            <p style="margin-bottom: 1.5rem; opacity: 0.8;">Express your creativity with our digital art tools</p>
+                            
+                            <div class="art-tools">
+                                <div class="art-tool">
+                                    <i class="fas fa-pencil-alt"></i> Pencil
+                                </div>
+                                <div class="art-tool">
+                                    <i class="fas fa-paint-brush"></i> Brush
+                                </div>
+                                <div class="art-tool">
+                                    <i class="fas fa-fill-drip"></i> Fill
+                                </div>
+                                <div class="art-tool">
+                                    <i class="fas fa-eraser"></i> Eraser
+                                </div>
+                                <div class="art-tool">
+                                    <i class="fas fa-palette"></i> Colors
+                                </div>
+                                <div class="art-tool">
+                                    <i class="fas fa-shapes"></i> Shapes
+                                </div>
+                            </div>
+                            
+                            <div class="art-canvas">
+                                <div class="canvas-placeholder">
+                                    <i class="fas fa-draw-polygon"></i>
+                                    <p>Draw your masterpiece here!</p>
+                                    <p style="font-size: 0.8rem; margin-top: 0.5rem;">Use the tools above to start drawing</p>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary" onclick="simulateDownload()">
+                                <i class="fas fa-download"></i> Save Drawing
+                            </button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'questionbank':
+                    title = languageData[currentLanguage].menuItems.questionbank;
+                    contentHTML = `
+                        <div class="question-bank">
+                            <div class="question-categories">
+                                <h3 style="margin-bottom: 1rem;">Subjects</h3>
+                                <ul class="category-list">
+                                    ${contentData.subjects.map(subject => `
+                                        <li class="${subject === contentData.subjects[0] ? 'active' : ''}">${subject}</li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            <div class="questions-list">
+                                <div class="question-item">
+                                    <h4>Sample Question for ${contentData.subjects[0]}</h4>
+                                    <p style="margin: 0.5rem 0; opacity: 0.8;">${contentData.subjects[0]} • Grade ${currentGrade} • ${currentLevel}</p>
+                                    <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="simulateDownload()">
+                                        <i class="fas fa-download"></i> Download Question
+                                    </button>
+                                </div>
+                                <div class="question-item">
+                                    <h4>Practice Exercise</h4>
+                                    <p style="margin: 0.5rem 0; opacity: 0.8;">${contentData.subjects[1]} • Grade ${currentGrade} • ${currentLevel}</p>
+                                    <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="simulateDownload()">
+                                        <i class="fas fa-download"></i> Download Question
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'doubt':
+                    title = languageData[currentLanguage].menuItems.doubt;
+                    contentHTML = `
+                        <div class="doubt-notification">
+                            <i class="fas fa-info-circle"></i> Our educators have been notified and will respond to your query shortly.
+                        </div>
+                        <div class="chat-container">
+                            <div class="chat-messages">
+                                <h3 style="margin-bottom: 1rem;">Ask Your Doubts</h3>
+                                <div class="message teacher">
+                                    <strong>Teacher:</strong> Hello! How can I help you with Grade ${currentGrade} ${contentData.subjects[0]} today?
+                                </div>
+                                <div class="message student">
+                                    <strong>You:</strong> I need help understanding a concept from today's lesson.
+                                </div>
+                                <div class="chat-input">
+                                    <input type="text" placeholder="Type your doubt here..." id="doubtInput">
+                                    <button class="btn btn-primary" id="sendDoubt">
+                                        <i class="fas fa-paper-plane"></i> Send
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="online-users">
+                                <h3 style="margin-bottom: 1rem;">Online Teachers</h3>
+                                <ul class="user-list">
+                                    ${contentData.subjects.slice(0, 3).map(subject => `
+                                        <li><div style="width: 10px; height: 10px; background: var(--success); border-radius: 50%;"></div> Teacher (${subject})</li>
+                                    `).join('')}
+                                </ul>
+                                <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="simulateDownload()">
+                                    <i class="fas fa-download"></i> Save Chat for Offline
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'notes':
+                    title = languageData[currentLanguage].menuItems.notes;
+                    contentHTML = `
+                        <div class="notes-container">
+                            ${contentData.subjects.map(subject => `
+                                <div class="note-card">
+                                    <h3>${subject} Notes</h3>
+                                    <div class="note-content">
+                                        <p>Important concepts and formulas for ${subject} Grade ${currentGrade}.</p>
+                                        <p>Perfect for ${currentLevel} level students.</p>
+                                    </div>
+                                    <button class="btn btn-primary" style="margin-top: 1rem;" onclick="simulateDownload()">
+                                        <i class="fas fa-download"></i> Download Notes
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'progress':
+                    title = languageData[currentLanguage].menuItems.progress;
+                    contentHTML = `
+                        <div class="progress-chart">
+                            <h3>Your Learning Progress - Grade ${currentGrade}</h3>
+                            <p style="margin-bottom: 1.5rem; opacity: 0.8;">Track your improvement across different subjects</p>
+                            
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-line" style="font-size: 3rem; margin-right: 1rem;"></i>
+                                <div>
+                                    <h4>Progress Analytics</h4>
+                                    <p>Weekly performance chart for ${currentLevel} level</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="content-grid">
+                            ${contentData.subjects.map(subject => `
+                                <div class="content-card">
+                                    <div class="content-icon">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <h3>${subject}</h3>
+                                    <p>Current Level: ${currentLevel}</p>
+                                    <p>Progress: ${Math.floor(Math.random() * 30) + 70}%</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                default:
+                    title = 'Content';
+                    contentHTML = `<p>Select a category from the menu to view content.</p>`;
+            }
+            
+            if (contentTitle) contentTitle.textContent = title;
+            if (contentContainer) {
+                contentContainer.innerHTML = contentHTML;
+                
+                // Add event listener for sending doubts
+                const sendDoubtBtn = document.getElementById('sendDoubt');
+                const doubtInput = document.getElementById('doubtInput');
+                
+                if (sendDoubtBtn && doubtInput) {
+                    sendDoubtBtn.addEventListener('click', () => {
+                        if (doubtInput.value.trim()) {
+                            showNotification('Your doubt has been sent! Our educators will respond shortly.');
+                            doubtInput.value = '';
+                        }
+                    });
+                }
+            }
+        }
+        
+        // Load teacher content
+        function loadTeacherContent(type) {
+            let contentHTML = '';
+            let title = '';
+            
+            switch(type) {
+                case 'teacher-dashboard':
+                    title = languageData[currentLanguage].menuItems.teacherDashboard;
+                    contentHTML = `
+                        <div class="teacher-stats">
+                            <div class="stat-card">
+                                <span class="stat-value">24</span>
+                                <div class="stat-label">${languageData[currentLanguage].totalStudentsText}</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">78%</span>
+                                <div class="stat-label">${languageData[currentLanguage].avgProgressText}</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">12</span>
+                                <div class="stat-label">${languageData[currentLanguage].activeLessonsText}</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">5</span>
+                                <div class="stat-label">${languageData[currentLanguage].pendingDoubtsText}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="student-list">
+                            <h3 style="margin-bottom: 1rem;">${languageData[currentLanguage].recentActivityText}</h3>
+                            <div class="student-item">
+                                <div class="student-avatar">SK</div>
+                                <div class="student-progress">
+                                    <div>${languageData[currentLanguage].studentActivity1}</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                                <div>${languageData[currentLanguage].score1}</div>
+                            </div>
+                            <div class="student-item">
+                                <div class="student-avatar">RK</div>
+                                <div class="student-progress">
+                                    <div>${languageData[currentLanguage].studentActivity2}</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 72%"></div>
+                                    </div>
+                                </div>
+                                <div>${languageData[currentLanguage].progress1}</div>
+                            </div>
+                            <div class="student-item">
+                                <div class="student-avatar">PP</div>
+                                <div class="student-progress">
+                                    <div>${languageData[currentLanguage].studentActivity3}</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 91%"></div>
+                                    </div>
+                                </div>
+                                <div>${languageData[currentLanguage].grade1}</div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'ai-lesson-planning':
+                    title = languageData[currentLanguage].menuItems.aiLessonPlanning;
+                    contentHTML = `
+                        <div class="ai-lesson-planning">
+                            <h3>AI-Powered Smart Lesson Planning</h3>
+                            <p style="margin-bottom: 1rem;">Generate day-wise lesson plans, student grouping suggestions, and activity sequences for multi-grade classrooms.</p>
+                            
+                            <div class="ai-form">
+                                <div class="form-group">
+                                    <label for="grades">Select Grades</label>
+                                    <select id="grades" multiple>
+                                        <option value="1">Grade 1</option>
+                                        <option value="2">Grade 2</option>
+                                        <option value="3">Grade 3</option>
+                                        <option value="4">Grade 4</option>
+                                        <option value="5">Grade 5</option>
+                                        <option value="6">Grade 6</option>
+                                        <option value="7">Grade 7</option>
+                                        <option value="8">Grade 8</option>
+                                        <option value="9">Grade 9</option>
+                                        <option value="10">Grade 10</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="subjects">Subjects</label>
+                                    <select id="subjects" multiple>
+                                        <option value="math">Mathematics</option>
+                                        <option value="science">Science</option>
+                                        <option value="english">English</option>
+                                        <option value="hindi">Hindi</option>
+                                        <option value="social">Social Studies</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="topics">Topics/Syllabus</label>
+                                    <textarea id="topics" placeholder="Enter topics or upload syllabus..."></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="duration">Duration (weeks)</label>
+                                    <input type="number" id="duration" min="1" max="12" value="4">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="students">Number of Students</label>
+                                    <input type="number" id="students" min="1" max="100" value="24">
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <button class="btn btn-primary" id="generateLessonPlan">
+                                        <i class="fas fa-robot"></i> Generate AI Lesson Plan
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-result" id="aiResult" style="display: none;">
+                                <h3>Your AI-Generated Lesson Plan</h3>
+                                <div class="planner-schedule">
+                                    <div class="schedule-day">
+                                        <h4>Week 1</h4>
+                                        <div class="schedule-item">Mathematics: Numbers & Counting</div>
+                                        <div class="schedule-item">Science: Living & Non-living</div>
+                                        <div class="schedule-item">English: Basic Sentences</div>
+                                    </div>
+                                    <div class="schedule-day">
+                                        <h4>Week 2</h4>
+                                        <div class="schedule-item">Mathematics: Addition & Subtraction</div>
+                                        <div class="schedule-item">Science: Plants & Animals</div>
+                                        <div class="schedule-item">English: Reading Practice</div>
+                                    </div>
+                                </div>
+                                
+                                <h4 style="margin-top: 1.5rem;">AI-Recommended Student Groups</h4>
+                                <div class="student-grouping">
+                                    <div class="group-card">
+                                        <h4>Group A (Advanced)</h4>
+                                        <div class="student-list-item">Rahul Kumar</div>
+                                        <div class="student-list-item">Priya Patel</div>
+                                        <div class="student-list-item">Amit Singh</div>
+                                    </div>
+                                    <div class="group-card">
+                                        <h4>Group B (Intermediate)</h4>
+                                        <div class="student-list-item">Sneha Kumari</div>
+                                        <div class="student-list-item">Vikram Joshi</div>
+                                        <div class="student-list-item">Anjali Sharma</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top: 1.5rem;">
+                                    <button class="btn btn-primary" onclick="simulateDownload()">
+                                        <i class="fas fa-download"></i> Download as PDF
+                                    </button>
+                                    <button class="btn btn-secondary" style="margin-left: 1rem;" onclick="showNotification('Lesson plan shared via WhatsApp')">
+                                        <i class="fas fa-share-alt"></i> Share via WhatsApp
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'multi-grade':
+                    title = languageData[currentLanguage].menuItems.multiGrade;
+                    contentHTML = `
+                        <div class="multi-grade-classroom">
+                            <h3>Multi-Grade Classroom Management</h3>
+                            <p style="margin-bottom: 1rem;">Manage multiple grade levels simultaneously with our AI-powered tools.</p>
+                            
+                            <div class="grade-tabs">
+                                <div class="grade-tab active" data-grade="1">Grade 1</div>
+                                <div class="grade-tab" data-grade="2">Grade 2</div>
+                                <div class="grade-tab" data-grade="3">Grade 3</div>
+                                <div class="grade-tab" data-grade="4">Grade 4</div>
+                                <div class="grade-tab" data-grade="5">Grade 5</div>
+                                <div class="grade-tab" data-grade="6">Grade 6</div>
+                                <div class="grade-tab" data-grade="7">Grade 7</div>
+                                <div class="grade-tab" data-grade="8">Grade 8</div>
+                                <div class="grade-tab" data-grade="9">Grade 9</div>
+                                <div class="grade-tab" data-grade="10">Grade 10</div>
+                            </div>
+                            
+                            <div class="grade-content active" id="grade-1-content">
+                                <h4>Grade 1 - Weekly Plan</h4>
+                                <div class="planner-schedule">
+                                    <div class="schedule-day">
+                                        <h4>Monday</h4>
+                                        <div class="schedule-item">Mathematics: Numbers 1-20</div>
+                                        <div class="schedule-item">English: Alphabet & Sounds</div>
+                                    </div>
+                                    <div class="schedule-day">
+                                        <h4>Tuesday</h4>
+                                        <div class="schedule-item">Science: Living Things</div>
+                                        <div class="schedule-item">Hindi: Basic Words</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="student-list">
+                                <h3 style="margin-bottom: 1rem;">Multi-Grade Student Progress</h3>
+                                <div class="student-item">
+                                    <div class="student-avatar">SK</div>
+                                    <div class="student-progress">
+                                        <div>Sneha Kumari (Grade 4)</div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 85%"></div>
+                                        </div>
+                                    </div>
+                                    <div>85%</div>
+                                </div>
+                                <div class="student-item">
+                                    <div class="student-avatar">RK</div>
+                                    <div class="student-progress">
+                                        <div>Rahul Kumar (Grade 3)</div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 72%"></div>
+                                        </div>
+                                    </div>
+                                    <div>72%</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'teacher-doubts':
+                    title = languageData[currentLanguage].menuItems.teacherDoubts;
+                    contentHTML = `
+                        <div class="doubts-container">
+                            <h3 style="margin-bottom: 1rem;">Pending Student Doubts</h3>
+                            ${teacherDoubts.map(doubt => `
+                                <div class="doubt-item">
+                                    <div class="doubt-header">
+                                        <div class="doubt-student">${doubt.student} - ${doubt.grade}</div>
+                                        <div class="doubt-time">${doubt.time}</div>
+                                    </div>
+                                    <div class="doubt-subject">${doubt.subject}</div>
+                                    <p>${doubt.question}</p>
+                                    <div style="margin-top: 1rem;">
+                                        <button class="btn btn-primary" onclick="showNotification('Response sent to ${doubt.student}')">
+                                            <i class="fas fa-reply"></i> Respond
+                                        </button>
+                                        <button class="btn btn-secondary" style="margin-left: 0.5rem;" onclick="showNotification('Doubt marked as resolved')">
+                                            <i class="fas fa-check"></i> Mark Resolved
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'progress-reports':
+                    title = languageData[currentLanguage].menuItems.progressReports;
+                    contentHTML = `
+                        <div class="reports-grid">
+                            <div class="report-card">
+                                <div class="report-header">
+                                    <div class="report-student">Sneha Kumari</div>
+                                    <div class="report-grade">Grade 4</div>
+                                </div>
+                                <div class="report-subject">
+                                    <span>Mathematics</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="report-subject">
+                                    <span>Science</span>
+                                    <span>78%</span>
+                                </div>
+                                <div class="report-subject">
+                                    <span>English</span>
+                                    <span>92%</span>
+                                </div>
+                                <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" onclick="simulateDownload()">
+                                    <i class="fas fa-download"></i> Download Full Report
+                                </button>
+                            </div>
+                            
+                            <div class="report-card">
+                                <div class="report-header">
+                                    <div class="report-student">Rahul Kumar</div>
+                                    <div class="report-grade">Grade 3</div>
+                                </div>
+                                <div class="report-subject">
+                                    <span>Mathematics</span>
+                                    <span>72%</span>
+                                </div>
+                                <div class="report-subject">
+                                    <span>Science</span>
+                                    <span>68%</span>
+                                </div>
+                                <div class="report-subject">
+                                    <span>English</span>
+                                    <span>75%</span>
+                                </div>
+                                <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" onclick="simulateDownload()">
+                                    <i class="fas fa-download"></i> Download Full Report
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-chart" style="margin-top: 1.5rem;">
+                            <h3>Class Performance Overview</h3>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-bar" style="font-size: 3rem; margin-right: 1rem;"></i>
+                                <div>
+                                    <h4>Performance Analytics</h4>
+                                    <p>Class-wise progress chart will be displayed here</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                default:
+                    title = languageData[currentLanguage].menuItems.teacherDashboard;
+                    contentHTML = `
+                        <div class="teacher-stats">
+                            <div class="stat-card">
+                                <span class="stat-value">24</span>
+                                <div class="stat-label">${languageData[currentLanguage].totalStudentsText}</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">78%</span>
+                                <div class="stat-label">${languageData[currentLanguage].avgProgressText}</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">12</span>
+                                <div class="stat-label">${languageData[currentLanguage].activeLessonsText}</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">5</span>
+                                <div class="stat-label">${languageData[currentLanguage].pendingDoubtsText}</div>
+                            </div>
+                        </div>
+                    `;
+            }
+            
+            if (teacherContentTitle) teacherContentTitle.textContent = title;
+            if (teacherContentContainer) {
+                teacherContentContainer.innerHTML = contentHTML;
+                
+                // Add event listeners for AI lesson planning
+                const generateLessonPlanBtn = document.getElementById('generateLessonPlan');
+                const aiResult = document.getElementById('aiResult');
+                
+                if (generateLessonPlanBtn && aiResult) {
+                    generateLessonPlanBtn.addEventListener('click', () => {
+                        showLoading('Generating AI lesson plan...');
+                        setTimeout(() => {
+                            hideLoading();
+                            aiResult.style.display = 'block';
+                            showNotification('AI lesson plan generated successfully!');
+                        }, 2000);
+                    });
+                }
+                
+                // Add event listeners for grade tabs
+                const gradeTabs = document.querySelectorAll('.grade-tab');
+                const gradeContents = document.querySelectorAll('.grade-content');
+                
+                gradeTabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const grade = tab.dataset.grade;
+                        
+                        // Update active tab
+                        gradeTabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        
+                        // Show corresponding content
+                        gradeContents.forEach(content => {
+                            content.classList.remove('active');
+                        });
+                        document.getElementById(`grade-${grade}-content`).classList.add('active');
+                    });
+                });
+            }
+        }
+        
+        // Initialize the app
+        window.addEventListener('DOMContentLoaded', () => {
+            // Set initial state
+            showPage('role-page');
+            userProfile.style.display = 'none'; // Hide user profile until login
+            
+            // Load saved preferences
+            const savedDayMode = localStorage.getItem('eduBloomDayMode') === 'true';
+            const savedLowBandwidth = localStorage.getItem('eduBloomLowBandwidth') === 'true';
+            const savedLanguage = localStorage.getItem('eduBloomLanguage') || 'english';
+            
+            if (savedDayMode) {
+                isDayMode = true;
+                document.body.classList.add('day-mode');
+                modeToggle.innerHTML = '<i class="fas fa-sun"></i><span id="modeToggleText">Day Mode</span>';
+            }
+            
+            if (savedLowBandwidth) {
+                isLowBandwidth = true;
+                document.body.classList.add('low-bandwidth');
+                bandwidthToggle.innerHTML = '<i class="fas fa-signal"></i><span id="bandwidthToggleText">Low Bandwidth</span>';
+            }
+            
+            // Set language
+            currentLanguage = savedLanguage;
+            if (languageSelect) languageSelect.value = savedLanguage;
+            if (teacherLanguageSelect) teacherLanguageSelect.value = savedLanguage;
+            updateLanguageText();
+            
+            // Add download event listeners to offline buttons
+            document.querySelectorAll('.offline-btn').forEach(btn => {
+                btn.addEventListener('click', simulateDownload);
+            });
+        });
+    </script>
+</body>
+</html>
